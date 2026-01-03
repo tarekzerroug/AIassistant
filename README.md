@@ -1,2 +1,2 @@
 # AIassistant
-chrome web extension that integrates chat gpt
+AI powered web extension 
