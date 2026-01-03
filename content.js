@@ -65,3 +65,10 @@ document.addEventListener("keydown", (event) => {
     );
   };
 });
+
+
+document.addEventListener("mousedown", (event) => {
+  if (!popup.contains(event.target)) {
+    popup.style.display = "none";
+  }
+});
