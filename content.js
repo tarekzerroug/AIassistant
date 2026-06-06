@@ -1,25 +1,35 @@
 
 
-// 1. Crréate the pop up 
+let currentText = "";
+
+// 1. Create the pop up
 const popup = document.createElement("div");
-popup.style.position = "absolute";
-popup.style.background = "#ffffffff";
-popup.style.color = "#000000ff";
-popup.style.padding = "8px 12px";
-popup.style.borderRadius = "6px";
-popup.style.fontSize = "14px";
-popup.style.maxWidth = "300px";
-popup.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)";
+popup.style.position = "fixed";
+popup.style.left = "16px";
+popup.style.bottom = "16px";
+popup.style.width = "fit-content";
+popup.style.minWidth = "120px";
+popup.style.maxWidth = "220px";
+popup.style.maxHeight = "160px";
+popup.style.background = "transparent";
+popup.style.color = "inherit";
+popup.style.padding = "0";
+popup.style.borderRadius = "0";
+popup.style.fontSize = "12px";
+popup.style.boxShadow = "none";
+popup.style.border = "none";
+popup.style.backdropFilter = "none";
+popup.style.webkitBackdropFilter = "none";
 popup.style.zIndex = "999999";
 popup.style.display = "none";
 popup.style.pointerEvents = "auto";
+popup.style.overflow = "hidden";
 
 document.body.appendChild(popup);
 
-// 2. Listener fot the tab touch 
+// 2. Listener for the Tab key
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Tab") return;
-  event.preventDefault();
 
   const selection = window.getSelection();
   if (!selection || selection.rangeCount === 0) return;
@@ -27,43 +37,32 @@ document.addEventListener("keydown", (event) => {
   currentText = selection.toString().trim();
   if (!currentText) return;
 
-  currentRect = selection.getRangeAt(0).getBoundingClientRect();
+  event.preventDefault();
 
   popup.innerHTML = `
-    <select id="ai-action">
-      <option value="explain">Explain</option>
-      <option value="summarize">Summarize</option>
-      <option value="simplify">Simplify</option>
-      <option value="translate-in-french">Translate in french</option>
-    </select>
-    <button id="run-ai">Run</button>
-    <div id="result"></div>
+    <div id="result" style="padding:0; margin:0; background:transparent; border:none; min-height:20px; max-height:140px; overflow-y:auto; white-space:pre-wrap; font-size:11px; line-height:1.3; color:inherit; text-shadow:none; max-width:220px;"></div>
   `;
 
-  popup.style.top = `${currentRect.bottom + window.scrollY + 8}px`;
-  popup.style.left = `${currentRect.left + window.scrollX}px`;
+  popup.style.left = "16px";
+  popup.style.bottom = "16px";
   popup.style.display = "block";
 
   const result = popup.querySelector("#result");
+  result.textContent = "Thinking ...";
 
-  popup.querySelector("#run-ai").onclick = () => {
-    const action = popup.querySelector("#ai-action").value;
-    result.textContent = "Thinking...";
-
-    chrome.runtime.sendMessage(
-      {
-        type: "ASK_AI",
-        text: action + ": " + currentText,
-      },
-      (response) => {
-        if (!response) {
-          result.textContent = "Error";
-          return;
-        }
-        result.textContent = response.answer;
+  chrome.runtime.sendMessage(
+    {
+      type: "ASK_AI",
+      text: "Explain: " + currentText,
+    },
+    (response) => {
+      if (!response) {
+        result.textContent = "Error";
+        return;
       }
-    );
-  };
+      result.textContent = response.answer;
+    }
+  );
 });
 
 
