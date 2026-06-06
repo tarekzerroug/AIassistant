@@ -12,7 +12,7 @@ popup.style.minWidth = "120px";
 popup.style.maxWidth = "220px";
 popup.style.maxHeight = "160px";
 popup.style.background = "transparent";
-popup.style.color = "inherit";
+popup.style.color = "#e6e6e6";
 popup.style.padding = "0";
 popup.style.borderRadius = "0";
 popup.style.fontSize = "12px";
@@ -40,7 +40,7 @@ document.addEventListener("keydown", (event) => {
   event.preventDefault();
 
   popup.innerHTML = `
-    <div id="result" style="padding:0; margin:0; background:transparent; border:none; min-height:20px; max-height:140px; overflow-y:auto; white-space:pre-wrap; font-size:11px; line-height:1.3; color:inherit; text-shadow:none; max-width:220px;"></div>
+    <div id="result" style="padding:0; margin:0; background:transparent; border:none; min-height:20px; max-height:140px; overflow-y:auto; white-space:pre-wrap; font-size:12px; line-height:1.35; color:#e6e6e6; font-weight:400; text-shadow:none; max-width:220px;"></div>
   `;
 
   popup.style.left = "16px";
