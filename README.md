@@ -11,6 +11,7 @@ The goal of this project is to explore how AI can be integrated into a lightweig
 
 - Text selection on any webpage
 - Popup triggered via the **Tab** key
+- Visible-tab screenshot analysis triggered via **Option + S** on macOS or **Alt + S** on Windows/Linux
 - AI actions available:
   - Explain
   - Summarize
@@ -80,6 +81,8 @@ The project is composed of three main parts:
 3. Choose an AI action from the dropdown
 4. Click **Run**
 5. The AI response appears in a popup next to the selected text
+
+To analyze the visible page as an image, press **Option + S** on macOS or **Alt + S** on Windows/Linux. The extension captures the current tab, sends the screenshot to the backend, and shows the AI response in the popup.
 
 ---
 

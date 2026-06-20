@@ -1,8 +1,9 @@
 // ==========================================================================
-// 1. INITIALISATION DE L'HÔTE (CAMOUFLAGE ET SHADOW DOM FERMÉ)
+// 1. INITIALISATION DE L'HÔTE NETTOYÉ (INSPECT-PROOF)
 // ==========================================================================
 
 let currentText = "";
+let pendingScreenshot = false;
 
 /* Création de l'hôte avec ton ID de productivité */
 const host = document.createElement("aside");
@@ -12,12 +13,12 @@ host.id = "social-media-detox-shield";
 host.classList.add("detox-shield-active", "focus-mode");
 host.setAttribute("data-detox-version", "2.4.1");
 
-// Positionnement et sécurité de l'hôte
-host.style.position = "fixed";
-host.style.left = "16px";
-host.style.bottom = "16px";
-host.style.zIndex = "2147483647"; // Priorité d'affichage maximale
-host.style.pointerEvents = "none"; // L'hôte ne bloque pas les clics sur la page
+// STYLE DE L'HÔTE PURGÉ : Totalement plat, neutre et invisible à l'œil nu
+host.style.display = "block";
+host.style.width = "0";
+host.style.height = "0";
+host.style.position = "absolute"; 
+host.style.pointerEvents = "none";
 
 /* Injection tout en bas de la page */
 document.body.appendChild(host);
@@ -28,12 +29,17 @@ const shadow = host.attachShadow({
 });
 
 // ==========================================================================
-// 2. CRÉATION DU POP-UP INTERNE (DANS LE SHADOW DOM)
+// 2. LE POP-UP CACHÉ (IL EMBARK TOUTE LA LOGIQUE VISUELLE DE TON ANCIEN HÔTE)
 // ==========================================================================
 const popup = document.createElement("div");
 
-// Styles du pop-up d'affichage
-popup.style.position = "relative";
+// C'est ICI qu'on place les styles de positionnement à l'abri des regards
+popup.style.position = "fixed";
+popup.style.left = "16px";
+popup.style.bottom = "16px";
+popup.style.zIndex = "2147483647"; // Ta priorité d'affichage maximale, désormais masquée
+
+// Conservation stricte de tes styles d'origine pour le pop-up
 popup.style.width = "fit-content";
 popup.style.minWidth = "120px";
 popup.style.maxWidth = "220px";
@@ -57,6 +63,12 @@ shadow.appendChild(popup);
 // 3. INTERCEPTION DE LA TOUCHE "TAB"
 // ==========================================================================
 document.addEventListener("keydown", (event) => {
+  if (event.code === "KeyS" && event.altKey && !event.ctrlKey && !event.metaKey) {
+    event.preventDefault();
+    askAiAboutScreenshot();
+    return;
+  }
+
   if (event.key !== "Tab") return;
 
   const selection = window.getSelection();
@@ -68,7 +80,7 @@ document.addEventListener("keydown", (event) => {
   // Bloque le comportement natif (évite que le focus saute sur un bouton du site)
   event.preventDefault();
 
-  // Structure du texte injectée uniquement dans le Shadow DOM isolé
+  // Structure du texte injectée uniquement dans le Shadow DOM isolé (Tes styles d'origine)
   popup.innerHTML = `
     <div
       id="result"
@@ -119,14 +131,73 @@ document.addEventListener("keydown", (event) => {
   );
 });
 
+function showPopup(message) {
+  popup.innerHTML = `
+    <div
+      id="result"
+      style="
+        padding:0;
+        margin:0;
+        background:transparent;
+        border:none;
+        min-height:20px;
+        max-height:140px;
+        overflow-y:auto;
+        white-space:pre-wrap;
+        font-size:12px;
+        line-height:1.35;
+        color:#e6e6e6;
+        font-weight:400;
+        text-shadow:none;
+        max-width:220px;
+      "
+    ></div>
+  `;
+
+  popup.style.display = "block";
+
+  const result = popup.querySelector("#result");
+  result.textContent = message;
+  return result;
+}
+
+function askAiAboutScreenshot() {
+  if (pendingScreenshot) return;
+
+  pendingScreenshot = true;
+  const result = showPopup("Reading screenshot ...");
+
+  chrome.runtime.sendMessage(
+    {
+      type: "ASK_AI_SCREENSHOT",
+      text: "Analyse le screenshot , donne d'abord la réponse puis explique ton raisonnement .",
+    },
+    (response) => {
+      pendingScreenshot = false;
+
+      if (chrome.runtime.lastError) {
+        result.textContent = `Extension error: ${chrome.runtime.lastError.message}`;
+        return;
+      }
+
+      if (!response) {
+        result.textContent = "Extension error: No response from background script.";
+        return;
+      }
+
+      result.textContent = response.answer;
+    }
+  );
+}
+
 // ==========================================================================
 // 4. GESTION DE LA FERMETURE (CLIC EXTÉRIEUR)
 // ==========================================================================
 document.addEventListener("mousedown", (event) => {
   const path = event.composedPath();
 
-  // Si on clique sur le pop-up ou l'hôte, on ne fait rien
-  if (path.includes(host)) {
+  // Le clic est vérifié par rapport au pop-up réel ou à l'hôte
+  if (path.includes(popup) || path.includes(host)) {
     return;
   }
 
